@@ -1,0 +1,68 @@
+- name: Post Install epo, checkMK, azure
+  hosts: all
+  become: yes
+  tasks:
+        - name: create epo directory
+          file:
+            path: /epo
+            state: directory
+            owner: root
+            group: root
+            mode: '0750'
+         - name: copy epo file
+           copy:
+             src: /foreman-script/epo/install.sh
+             dest: /epo
+             owner: root
+             group: root
+             mode: '0750'
+          - name: set permissions
+            file:
+             path: /epo/install.sh
+             owner: root
+             group: root
+             mode: '0750'
+          - name: run epo script
+            command: /epo/install.sh
+          - name: create checkmk directory
+            file:
+             path: /checkmk
+             state: directory
+             owner: root
+             group: root
+             mode: '0750'
+          - name: copy checkmk agent
+            copy:
+              src: /check/check-mk-agent-2.2.0p9-1.noarch.rpm
+              dest: /checkmk
+              owner: root
+              group: root
+              mode: '0750'
+          - name: set permissions
+            file:
+              path: /checkmk/check-mk-agent-2.2.0p9-1.noarch.rpm
+              owner: root
+              group: root
+              mode: '0755'
+          - name: run checkmk install
+             command: rpm -ivh /checkmk/check-mk-agent-2.2.0p9-1.noarch.rpm
+          - name: Create Azure monitoring directory
+             file:
+              path: /azure
+              state: directory
+              owner: root
+              group: root
+              mode: '0750'
+          - name: copy Azure agent
+            copy:
+               src: /foreman-scripts/omsagent-1.16.0-0.universal.x64.sh
+               dest: /azure
+               owner: root
+               group: root
+               mode: '0750'
+          - name: run azure installation script
+             command: /azure/omsagent-1.16.0-0.universal.x64.sh --install -w cc9b7d71-e5a0-4231-9f15-2a5c8793dbcb -s ncL2HadlzqRb6AlsXkKld4Q/3R8md862CeovlHormaXg+20U6FMAZTAPfP85gH8O491xDrPdUJ1mexVizLd4+g== -p http://10.1.32.25:8080
+          - name:  set permissions
+            command: chown omsagent:omiusers /etc/bin/microsoft/omsagent/proxy.conf
+          - name: Restart omsagent
+            command: /opt/microsoft/omsagent/bin/service_control restart cc9b7d71-e5a0-4231-9f15-2a5c8793dbcb
